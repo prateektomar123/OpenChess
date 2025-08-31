@@ -28,7 +28,7 @@ A free, open-source React-based chess application that allows users to play ches
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/yourusername/openchess.git
+   git clone https://github.com/prateektomar123/openchess.git
    cd openchess
    ```
 
@@ -53,7 +53,7 @@ A free, open-source React-based chess application that allows users to play ches
 1. Fork this repository
 2. Connect your fork to [Netlify](https://netlify.com)
 3. Deploy automatically - no configuration needed!
-4. Your site will be live at `https://your-site-name.netlify.app`
+4. Your site will be live at `https://openchessai.netlify.app`
 
 #### Manual Build
 
