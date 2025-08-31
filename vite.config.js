@@ -7,6 +7,9 @@ export default defineConfig({
 
   // Build optimizations for production
   build: {
+    // Output directory for Netlify compatibility
+    outDir: 'build',
+    
     // Generate source maps for better debugging
     sourcemap: true,
 
