@@ -1,157 +1,101 @@
-# 🔒 Security & Privacy
+# 🔒 Security Policy
 
-## Overview
+## Supported Versions
 
-OpenChess takes security seriously. As a frontend-only application, we've designed it to minimize security risks while providing a great user experience.
+We release patches for security vulnerabilities. Which versions are eligible for receiving such patches depends on the CVSS v3.0 Rating:
 
-## How API Keys Are Handled
+| Version | Supported          |
+| ------- | ------------------ |
+| 1.0.x   | :white_check_mark: |
+| < 1.0   | :x:                |
 
-### Client-Side Storage Only
+## Reporting a Vulnerability
 
-- **No server storage**: Your API keys never leave your browser
-- **localStorage**: Keys are stored locally in your browser's localStorage
-- **Session persistence**: Keys remain until you clear them or use incognito mode
-- **No transmission**: We never send your keys to our servers
+We take the security of OpenChess seriously. If you believe you have found a security vulnerability, please report it to us as described below.
 
-### Direct API Calls
+**Please do not report security vulnerabilities through public GitHub issues.**
 
-```
-Your Browser → AI Provider API
-```
+Instead, please report them via email to [prateektomar123@gmail.com](mailto:prateektomar123@gmail.com).
 
-- All API calls are made directly from your browser to the AI provider
-- No intermediate servers or proxies
-- Your API keys are sent directly to the AI provider's servers
+You should receive a response within 48 hours. If for some reason you do not, please follow up via email to ensure we received your original message.
 
-## Security Best Practices
+Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
 
-### For Users
+### Required Information
 
-1. **Use dedicated API keys**: Create separate API keys for OpenChess
-2. **Monitor usage**: Check your AI provider's dashboard for usage and costs
-3. **Clear keys when done**: Use browser settings to clear localStorage
-4. **Use HTTPS**: Always access OpenChess over HTTPS
-5. **Keep keys private**: Never share your API keys with anyone
+- **Type of issue** (e.g., buffer overflow, SQL injection, cross-site scripting, etc.)
+- **Full paths of source file(s) related to the vulnerability**
+- **The location of the affected source code** (tag/branch/commit or direct URL)
+- **Any special configuration required to reproduce the issue**
+- **Step-by-step instructions to reproduce the issue**
+- **Proof-of-concept or exploit code** (if possible)
+- **Impact of the issue**, including how an attacker might exploit it
 
-### For Developers
+### What to Expect
 
-1. **No server-side keys**: Never store API keys on your server
-2. **HTTPS only**: Always deploy over HTTPS
-3. **CSP headers**: Content Security Policy headers are recommended
-4. **Regular updates**: Keep dependencies updated
-5. **Code review**: Review all changes for security implications
+1. **Initial Response**: You will receive an acknowledgment within 48 hours
+2. **Investigation**: Our security team will investigate the reported vulnerability
+3. **Updates**: You will receive regular updates on the progress
+4. **Resolution**: Once confirmed, we will work on a fix and coordinate disclosure
 
-## Privacy Considerations
+### Disclosure Policy
 
-### Data Collection
+When we receive a security bug report, we will:
 
-- **Zero data collection**: We don't collect any personal information
-- **No analytics**: No tracking or analytics by default
-- **No cookies**: No cookies used for tracking
-- **Anonymous usage**: All usage is completely anonymous
+1. **Confirm the problem** and determine affected versions
+2. **Audit code** to find any similar problems
+3. **Prepare fixes** for all supported versions
+4. **Release new versions** with the security fixes
+5. **Publicly disclose** the vulnerability in our security advisories
 
-### What We Don't Store
+### Security Advisories
 
-- ❌ User email addresses
-- ❌ Personal information
-- ❌ API keys (they stay in your browser)
-- ❌ Game history (stored locally)
-- ❌ Usage statistics
-- ❌ IP addresses
+Security advisories are published on our [GitHub Security Advisories](https://github.com/prateektomar123/openchess/security/advisories) page.
 
-## Security Features
+### Responsible Disclosure
 
-### Built-in Protections
+We kindly ask that you:
 
-- **HTTPS enforcement**: All connections must be HTTPS
-- **CSP headers**: Content Security Policy prevents XSS attacks
-- **No eval()**: No use of eval() or similar dangerous functions
-- **Input validation**: All user inputs are validated
-- **Error handling**: Secure error handling without information leakage
+- **Give us reasonable time** to respond to issues before any disclosure
+- **Make a good faith effort** to avoid privacy violations, destruction of data, and interruption or degradation of our service
+- **Not exploit** a security issue you discover for any reason
+- **Not violate** any other applicable laws or regulations
 
-### Third-Party Dependencies
+### Security Best Practices
 
-All dependencies are vetted and regularly updated:
+To help keep OpenChess secure, we recommend:
 
-- **chess.js**: Well-maintained chess logic library
-- **react-chessboard**: Trusted React component
-- **AI SDKs**: Official SDKs from AI providers
-- **Vite**: Modern, secure build tool
+- **Keep dependencies updated** - Regularly update your project dependencies
+- **Use HTTPS** - Always use HTTPS in production
+- **Validate input** - Never trust user input
+- **Follow OWASP guidelines** - Refer to [OWASP Top 10](https://owasp.org/www-project-top-ten/)
+- **Regular security audits** - Use tools like `npm audit` and `snyk`
 
-## API Key Security
+### Security Tools
 
-### Provider-Specific Security
+We use several tools to maintain security:
 
-- **OpenAI**: Uses secure token authentication
-- **Anthropic**: Enterprise-grade security
-- **Google AI**: OAuth 2.0 compliant
-- **OpenRouter**: Unified secure access to multiple providers
+- **npm audit** - For dependency vulnerability scanning
+- **Snyk** - For continuous security monitoring
+- **GitHub Security** - For automated vulnerability detection
+- **Lighthouse CI** - For security and best practices monitoring
 
-### Key Management Best Practices
+### Security Contacts
 
-1. **Rate limiting**: Implement your own rate limiting in AI provider dashboards
-2. **Cost monitoring**: Set up billing alerts with your AI providers
-3. **Key rotation**: Rotate keys regularly for better security
-4. **Access restrictions**: Limit API key access to specific services if possible
+- **Security Team**: [prateektomar123@gmail.com](mailto:prateektomar123@gmail.com)
+- **Maintainers**: [@prateektomar123](https://github.com/prateektomar123)
+- **PGP Key**: Available upon request for sensitive communications
 
-## Deployment Security
+### Bug Bounty
 
-### Netlify Deployment
+Currently, we do not offer a formal bug bounty program. However, we do recognize security researchers who responsibly disclose vulnerabilities in our [Security Hall of Fame](SECURITY_HALL_OF_FAME.md).
 
-- **Automatic HTTPS**: Free SSL certificates
-- **CDN distribution**: Global content delivery
-- **Build security**: Isolated build environments
-- **Access controls**: Repository-based access control
+### Acknowledgments
 
-### Production Checklist
-
-- [ ] HTTPS enabled
-- [ ] Security headers configured
-- [ ] Dependencies updated
-- [ ] No sensitive data in source code
-- [ ] CSP headers set
-- [ ] Regular security audits
-
-## Incident Response
-
-If you suspect a security issue:
-
-1. **Stop using the affected API key**
-2. **Generate a new key** from your AI provider
-3. **Clear localStorage** in your browser
-4. **Report issues** via GitHub issues
-5. **Monitor your AI provider's usage** for unauthorized access
-
-## Compliance
-
-### GDPR Compliance
-
-- **No personal data stored**: Fully compliant with GDPR
-- **User control**: Users control all their data
-- **Data minimization**: Zero data collection principle
-
-### Privacy by Design
-
-- **Privacy-first approach**: Security and privacy considered in all features
-- **User consent**: Clear communication about data handling
-- **Transparency**: Open source code for public review
-
-## Contributing to Security
-
-We welcome security contributions! Please:
-
-- Report security vulnerabilities via GitHub issues (don't create public issues)
-- Follow responsible disclosure practices
-- Help improve our security documentation
-- Contribute to security testing and code review
-
-## Contact
-
-For security concerns, please contact us through:
-
-- GitHub Issues (for public discussions)
-- GitHub Security tab (for private vulnerability reports)
+We would like to thank the security researchers and community members who have responsibly disclosed vulnerabilities to us. Your contributions help make OpenChess more secure for everyone.
 
 ---
 
-**Remember**: With great AI power comes great responsibility. Always use API keys responsibly and monitor your usage! ⚠️
+**Thank you for helping keep OpenChess secure! 🛡️**
+
+By following these guidelines, we can work together to ensure the security and integrity of our open-source chess platform.
