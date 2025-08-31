@@ -3,10 +3,36 @@ import React, { useState } from 'react'
 const ApiKeyManager = ({ apiKeys, onApiKeyChange, selectedAI, onAIChange, selectedModel, onModelChange }) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [tempModel, setTempModel] = useState('')
+  const [showCustomModelForm, setShowCustomModelForm] = useState(false)
+  const [customModel, setCustomModel] = useState({
+    id: '',
+    name: '',
+    provider: 'openai',
+    description: ''
+  })
 
   const providers = [
     { id: 'openrouter', name: 'OpenRouter', placeholder: 'sk-or-v1-...', link: 'https://openrouter.ai/keys', color: '#f59e0b' }
   ]
+
+  const customModelProviders = [
+    { id: 'openai', name: 'OpenAI', color: '#10a37f', icon: '🤖' },
+    { id: 'anthropic', name: 'Anthropic', color: '#d97706', icon: '🧠' },
+    { id: 'google', name: 'Google AI', color: '#4285f4', icon: '🔍' },
+    { id: 'xai', name: 'xAI', color: '#000000', icon: '🚀' },
+    { id: 'meta', name: 'Meta', color: '#0490ff', icon: '🦍' },
+    { id: 'mistral', name: 'Mistral', color: '#ff7000', icon: '💨' },
+    { id: 'deepseek', name: 'DeepSeek', color: '#8b5cf6', icon: '🧩' },
+    { id: 'qwen', name: 'Qwen', color: '#22c55e', icon: '🐉' },
+    { id: 'cohere', name: 'Cohere', color: '#f97316', icon: '🟠' },
+    { id: 'custom', name: 'Custom', color: '#6b7280', icon: '⚙️' }
+  ]
+
+  // Load custom models from localStorage
+  const [customModels, setCustomModels] = useState(() => {
+    const saved = localStorage.getItem('chess-custom-models')
+    return saved ? JSON.parse(saved) : []
+  })
 
   const allModels = [
     {
@@ -63,11 +89,46 @@ const ApiKeyManager = ({ apiKeys, onApiKeyChange, selectedAI, onAIChange, select
     }
   }
 
+  const handleCustomModelSelect = (modelId) => {
+    setTempModel(modelId)
+  }
+
+  const handleAddCustomModel = () => {
+    if (customModel.name && customModel.provider) {
+      const newCustomModel = {
+        ...customModel,
+        id: `custom/${customModel.provider}/${customModel.name.toLowerCase().replace(/\s+/g, '-')}`,
+        provider: customModel.provider.charAt(0).toUpperCase() + customModel.provider.slice(1),
+        pricing: 'Custom'
+      }
+      
+      const updatedCustomModels = [...customModels, newCustomModel]
+      setCustomModels(updatedCustomModels)
+      localStorage.setItem('chess-custom-models', JSON.stringify(updatedCustomModels))
+      
+      // Reset form
+      setCustomModel({
+        id: '',
+        name: '',
+        provider: 'openai',
+        description: ''
+      })
+      setShowCustomModelForm(false)
+    }
+  }
+
+  const handleRemoveCustomModel = (modelId) => {
+    const updatedCustomModels = customModels.filter(m => m.id !== modelId)
+    setCustomModels(updatedCustomModels)
+    localStorage.setItem('chess-custom-models', JSON.stringify(updatedCustomModels))
+  }
+
   const getPricingColor = (pricing) => {
     switch (pricing) {
       case 'Low': return '#10b981'
       case 'Medium': return '#f59e0b'
       case 'High': return '#ef4444'
+      case 'Custom': return '#8b5cf6'
       default: return '#6b7280'
     }
   }
@@ -169,6 +230,118 @@ const ApiKeyManager = ({ apiKeys, onApiKeyChange, selectedAI, onAIChange, select
                 <p className="api-key-description">
                   One API key gives you access to 15+ AI models from OpenAI, Anthropic, Google, xAI, and more!
                 </p>
+              </div>
+
+              {/* Custom Model Section */}
+              <div className="custom-model-section">
+                <div className="custom-model-header">
+                  <h4>⚙️ Custom Models</h4>
+                  <button
+                    className="add-custom-model-btn"
+                    onClick={() => setShowCustomModelForm(!showCustomModelForm)}
+                  >
+                    {showCustomModelForm ? '−' : '+'} Add Custom Model
+                  </button>
+                </div>
+
+                {/* Custom Model Form */}
+                {showCustomModelForm && (
+                  <div className="custom-model-form">
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Model ID/Name</label>
+                        <input
+                          type="text"
+                          value={customModel.name}
+                          onChange={(e) => setCustomModel({...customModel, name: e.target.value})}
+                          placeholder="e.g., my-custom-model"
+                          className="custom-model-input"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Provider</label>
+                        <select
+                          value={customModel.provider}
+                          onChange={(e) => setCustomModel({...customModel, provider: e.target.value})}
+                          className="custom-model-select"
+                        >
+                          {customModelProviders.map(provider => (
+                            <option key={provider.id} value={provider.id}>
+                              {provider.icon} {provider.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="form-group">
+                      <label>Description (Optional)</label>
+                      <input
+                        type="text"
+                        value={customModel.description}
+                        onChange={(e) => setCustomModel({...customModel, description: e.target.value})}
+                        placeholder="Brief description of your custom model"
+                        className="custom-model-input"
+                      />
+                    </div>
+                    <div className="custom-model-actions">
+                      <button
+                        className="save-custom-model-btn"
+                        onClick={handleAddCustomModel}
+                        disabled={!customModel.name || !customModel.provider}
+                      >
+                        💾 Save Custom Model
+                      </button>
+                      <button
+                        className="cancel-custom-model-btn"
+                        onClick={() => setShowCustomModelForm(false)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Display Custom Models */}
+                {customModels.length > 0 && (
+                  <div className="custom-models-display">
+                    <h5>Your Custom Models</h5>
+                    <div className="custom-models-grid">
+                      {customModels.map(model => (
+                        <div
+                          key={model.id}
+                          className={`custom-model-card ${tempModel === model.id ? 'selected' : ''}`}
+                          onClick={() => handleCustomModelSelect(model.id)}
+                        >
+                          <div className="custom-model-header">
+                            <div className="custom-model-name">{model.name}</div>
+                            <div
+                              className="custom-model-pricing"
+                              style={{ backgroundColor: getPricingColor(model.pricing) }}
+                            >
+                              {model.pricing}
+                            </div>
+                          </div>
+                          <div className="custom-model-description">{model.description || 'Custom model'}</div>
+                          <div className="custom-model-provider">
+                            <span className="provider-badge" style={{ backgroundColor: getProviderColor(model.provider) }}>
+                              {model.provider}
+                            </span>
+                          </div>
+                          <button
+                            className="remove-custom-model-btn"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleRemoveCustomModel(model.id)
+                            }}
+                            title="Remove custom model"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Model Selection - Grouped by Provider */}
