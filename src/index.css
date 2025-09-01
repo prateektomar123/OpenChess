@@ -59,6 +59,36 @@ body {
   opacity: 0.9;
 }
 
+.creator-link {
+  margin-top: 15px;
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.creator-link a {
+  color: #1da1f2;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.creator-link a:hover {
+  color: #0d8bd9;
+  text-decoration: underline;
+  transform: translateY(-1px);
+}
+
+.x-icon {
+  display: inline-block;
+  margin-right: 4px;
+  vertical-align: middle;
+  transition: transform 0.3s ease;
+}
+
+.creator-link a:hover .x-icon {
+  transform: scale(1.1);
+}
+
 .setup-container {
   max-width: 600px;
   width: 100%;

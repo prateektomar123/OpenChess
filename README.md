@@ -2,6 +2,8 @@
 
 > **An open-source AI-powered chess game built with React and modern web technologies**
 
+> **Follow the creator on X: [@theprateektomar](https://x.com/theprateektomar)**
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![React](https://img.shields.io/badge/React-18.0+-blue.svg)](https://reactjs.org/)
 [![OpenAI](https://img.shields.io/badge/OpenAI-API-green.svg)](https://openai.com/)
@@ -179,12 +181,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **OpenRouter**: AI model access
 - **OpenAI, Anthropic, Google**: AI model providers
 - **Chess.com**: Inspiration and design references
+- **Creator**: [@theprateektomar](https://x.com/theprateektomar) on X
 
 ## 📞 Support
 
 - **GitHub Issues**: [Report bugs and request features](https://github.com/prateektomar123/openchess/issues)
 - **Discussions**: [Join community discussions](https://github.com/prateektomar123/openchess/discussions)
-- **Email**: [prateektomar123@gmail.com](mailto:prateektomar123@gmail.com)
+- **X (Twitter)**: [@theprateektomar](https://x.com/theprateektomar)
 
 ## 🌟 Star History
 
@@ -193,5 +196,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **Made with ♥️ by the OpenChess Community**
+
+**Follow the creator on X: [@theprateektomar](https://x.com/theprateektomar)**
 
 If you find this project helpful, please consider giving it a ⭐ star on GitHub!
