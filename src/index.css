@@ -84,6 +84,8 @@ body {
   box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
 }
 
+
+
 /* Clean Header */
 .setup-header {
   text-align: center;
@@ -127,6 +129,8 @@ body {
   width: 100%;
   max-width: 400px;
 }
+
+
 
 .selected-info {
   flex: 1;
@@ -178,6 +182,8 @@ body {
   transition: all 0.3s ease;
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
 }
+
+
 
 .select-ai-btn:hover {
   transform: translateY(-2px);
@@ -323,6 +329,8 @@ body {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
+
+
 
 /* Provider Selection */
 .provider-selection {
@@ -535,6 +543,8 @@ body {
   align-items: stretch;
 }
 
+
+
 .modal-api-input-large {
   flex: 1;
   padding: 12px 15px;
@@ -616,6 +626,8 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 15px;
 }
+
+
 
 .model-card {
   background: rgba(255, 255, 255, 0.05);
@@ -713,6 +725,8 @@ body {
   text-overflow: ellipsis;
 }
 
+
+
 .confirm-btn-large:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
@@ -726,6 +740,8 @@ body {
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
+
+
 
 .provider-header {
   display: flex;
@@ -772,6 +788,8 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 12px;
 }
+
+
 
 .provider-model-card {
   background: rgba(255, 255, 255, 0.03);
@@ -844,6 +862,8 @@ body {
   text-align: center;
 }
 
+
+
 .security-icon-simple {
   font-size: 1.2rem;
 }
@@ -864,6 +884,8 @@ body {
   transition: all 0.3s ease;
   width: 100%;
 }
+
+
 
 .start-button:hover:not(:disabled) {
   background: #45a049;
@@ -897,6 +919,8 @@ body {
   margin: 20px 0;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+
 
 .settings-header {
   display: flex;
@@ -1101,6 +1125,8 @@ body {
   overflow: visible;
 }
 
+
+
 .chess-game {
   background: rgba(0, 0, 0, 0.8);
   padding: 30px;
@@ -1112,6 +1138,8 @@ body {
   max-width: 800px;
   box-sizing: border-box;
 }
+
+
 
 .game-info {
   margin-bottom: 20px;
@@ -1263,6 +1291,8 @@ body {
   backdrop-filter: blur(15px);
 }
 
+
+
 .stat {
   background: rgba(255, 255, 255, 0.1);
   padding: 8px 16px;
@@ -1277,6 +1307,8 @@ body {
   gap: 12px;
   width: 100%;
 }
+
+
 
 .capture-group {
   background: rgba(255, 255, 255, 0.05);
@@ -1353,7 +1385,11 @@ body {
   overflow: visible;
   backdrop-filter: blur(15px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  position: relative;
 }
+
+
+
 
 .game-controls {
   margin: 20px 0;
@@ -1361,7 +1397,10 @@ body {
   gap: 15px;
   justify-content: center;
   flex-wrap: wrap;
+  width: 100%;
 }
+
+
 
 .control-btn {
   background: rgba(0, 0, 0, 0.6);
@@ -1394,6 +1433,8 @@ body {
   text-align: left;
   max-width: 100%;
 }
+
+
 
 .move-history h4 {
   margin-bottom: 15px;
@@ -1544,6 +1585,8 @@ body {
   box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
 }
 
+
+
 .reset-button:hover {
   background: rgba(244, 67, 54, 1);
   border-color: rgba(244, 67, 54, 0.8);
@@ -1559,6 +1602,8 @@ body {
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
+
+
 
 .custom-model-header {
   display: flex;
@@ -1623,6 +1668,8 @@ body {
   gap: 15px;
   margin-bottom: 15px;
 }
+
+
 
 .form-group {
   display: flex;
@@ -1727,6 +1774,8 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 12px;
 }
+
+
 
 .custom-model-card {
   background: rgba(139, 92, 246, 0.1);
@@ -1839,8 +1888,61 @@ body {
   text-transform: uppercase;
 }
 
+/* Minimal Responsive Fixes - Only addressing scrolling issues */
+
+/* Prevent horizontal scrolling on small screens */
+@media (max-width: 768px) {
+  .App {
+    padding: 15px;
+  }
+  
+  .setup-container {
+    max-width: calc(100vw - 30px);
+    margin: 10px;
+  }
+  
+  .chess-game {
+    max-width: calc(100vw - 30px);
+    margin: 10px;
+  }
+  
+  .board-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 480px) {
+  .App {
+    padding: 10px;
+  }
+  
+  .setup-container {
+    max-width: calc(100vw - 20px);
+    margin: 5px;
+    padding: 20px;
+  }
+  
+  .chess-game {
+    max-width: calc(100vw - 20px);
+    margin: 5px;
+    padding: 20px;
+  }
+  
+  .modal-content {
+    max-width: calc(100vw - 20px);
+    margin: 10px;
+  }
+}
+
 /* Enhanced Responsive Design */
+
+
 @media (max-width: 1024px) {
+  .App {
+    padding: 15px;
+  }
+  
   .api-key-manager {
     max-width: 90%;
     padding: 15px;
@@ -1858,6 +1960,16 @@ body {
   .models-grid-full {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
+  
+  .setup-container {
+    max-width: 90%;
+    padding: 25px;
+  }
+  
+  .chess-game {
+    max-width: 90%;
+    padding: 25px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1867,6 +1979,11 @@ body {
 
   .App-header h1 {
     font-size: 2rem;
+  }
+  
+  .App-header p {
+    font-size: 1rem;
+    padding: 0 10px;
   }
 
   .api-key-manager {
@@ -1965,7 +2082,7 @@ body {
     font-size: 0.8rem;
   }
 
-  /* Provider sections responsive */
+  
   .provider-section {
     padding: 15px;
     margin-bottom: 20px;
@@ -2064,6 +2181,8 @@ body {
     font-size: 12px;
     padding: 5px 8px;
   }
+  
+  
 }
 
 @media (max-width: 480px) {
@@ -2429,6 +2548,8 @@ body {
   outline-offset: 2px;
 }
 
+
+
 .api-key-input input:invalid {
   border: 1px solid #f44336;
 }
@@ -2437,65 +2558,4 @@ body {
   border: 1px solid #4CAF50;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .providers-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
 
-  .provider-header {
-    padding: 15px;
-    gap: 12px;
-  }
-
-  .provider-icon {
-    width: 40px;
-    height: 40px;
-    font-size: 1rem;
-  }
-
-  .selection-badge {
-    padding: 12px 20px;
-    gap: 12px;
-  }
-
-  .setup-header h2 {
-    font-size: 2rem;
-  }
-
-  .model-item {
-    padding: 12px 15px;
-  }
-}
-
-@media (max-width: 480px) {
-  .api-key-manager {
-    padding: 15px;
-  }
-
-  .provider-card {
-    margin: 0 -10px;
-  }
-
-  .provider-header {
-    flex-direction: column;
-    text-align: center;
-    gap: 10px;
-  }
-
-  .provider-link {
-    margin-left: 0;
-    margin-top: 10px;
-  }
-
-  .selection-badge {
-    flex-direction: column;
-    text-align: center;
-    gap: 10px;
-  }
-
-  .setup-header h2 {
-    font-size: 1.8rem;
-  }
-}

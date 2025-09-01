@@ -148,78 +148,74 @@ const ChessGame = ({ aiProvider, apiKey, gameSettings = {}, selectedModel = '' }
       return
     }
 
-    // If no square is selected, try to select this square
+    const piece = game.get(square)
+    
+    // If clicking on a white piece, select it (regardless of current selection)
+    if (piece && piece.color === 'w') {
+      setSelectedSquare(square)
+      highlightLegalMoves(square)
+      setError('')
+      return
+    }
+    
+    // If no square is selected, show error
     if (!selectedSquare) {
-      const piece = game.get(square)
-      // Only allow selecting white pieces (user's pieces)
-      if (piece && piece.color === 'w') {
-        setSelectedSquare(square)
-        highlightLegalMoves(square)
+      setError('Please select one of your pieces (white) first.')
+      return
+    }
+    
+    // If a square is already selected, try to make a move
+    const moveAttempt = {
+      from: selectedSquare,
+      to: square,
+      promotion: 'q' // Auto-promote to queen for simplicity
+    }
+
+    // Check if it's a pawn promotion move and get user preference
+    const selectedPiece = game.get(selectedSquare)
+    if (selectedPiece && selectedPiece.type === 'p' && (square[1] === '8' || square[1] === '1')) {
+      const promotionPiece = prompt('Promote pawn to (q/r/b/n):', 'q') || 'q'
+      if (['q', 'r', 'b', 'n'].includes(promotionPiece.toLowerCase())) {
+        moveAttempt.promotion = promotionPiece.toLowerCase()
+      }
+    }
+
+    // Try to make the move
+    const gameCopy = new Chess(game.fen())
+    const result = gameCopy.move(moveAttempt)
+
+    if (result) {
+      // Move successful
+      setGame(gameCopy)
+      setMoveHistory(prev => [...prev, { 
+        move: result.san, 
+        player: 'user',
+        fen: gameCopy.fen(),
+        time: Date.now() - gameStartTime
+      }])
+      setLastMove({ from: selectedSquare, to: square })
+      setMoveCount(prev => prev + 1)
+      
+      // Clear selection and errors
+      setSelectedSquare('')
+      setHighlightedSquares({})
+      setError('')
+      
+      // Check if game is over
+      if (gameCopy.isGameOver()) {
+        handleGameEnd(gameCopy)
       } else {
-        setError('Please select one of your pieces (white).')
+        // Switch to AI's turn
+        setIsUserTurn(false)
+        // Add small delay for better UX and pass the updated game state
+        setTimeout(() => {
+          makeAIMove(gameCopy)
+        }, 750)
       }
     } else {
-      // If a square is already selected, try to make a move
-      const moveAttempt = {
-        from: selectedSquare,
-        to: square,
-        promotion: 'q' // Auto-promote to queen for simplicity
-      }
-
-      // Check if it's a pawn promotion move and get user preference
-      const piece = game.get(selectedSquare)
-      if (piece && piece.type === 'p' && (square[1] === '8' || square[1] === '1')) {
-        const promotionPiece = prompt('Promote pawn to (q/r/b/n):', 'q') || 'q'
-        if (['q', 'r', 'b', 'n'].includes(promotionPiece.toLowerCase())) {
-          moveAttempt.promotion = promotionPiece.toLowerCase()
-        }
-      }
-
-      // Try to make the move
-      const gameCopy = new Chess(game.fen())
-      const result = gameCopy.move(moveAttempt)
-
-      if (result) {
-        // Move successful
-        setGame(gameCopy)
-        setMoveHistory(prev => [...prev, { 
-          move: result.san, 
-          player: 'user',
-          fen: gameCopy.fen(),
-          time: Date.now() - gameStartTime
-        }])
-        setLastMove({ from: selectedSquare, to: square })
-        setMoveCount(prev => prev + 1)
-        
-        // Clear selection and errors
-        setSelectedSquare('')
-        setHighlightedSquares({})
-        setError('')
-        
-        // Check if game is over
-        if (gameCopy.isGameOver()) {
-          handleGameEnd(gameCopy)
-        } else {
-          // Switch to AI's turn
-          setIsUserTurn(false)
-          // Add small delay for better UX and pass the updated game state
-          setTimeout(() => {
-            makeAIMove(gameCopy)
-          }, 750)
-        }
-      } else {
-        // Invalid move - provide feedback
-        const targetPiece = game.get(square)
-        if (targetPiece && targetPiece.color === 'w') {
-          // Clicked on another white piece, select it
-          setSelectedSquare(square)
-          highlightLegalMoves(square)
-          setError('')
-        } else {
-          setError(`Invalid move: ${selectedSquare} to ${square}. Please try a legal move.`)
-          // Keep current selection
-        }
-      }
+      // Invalid move - provide feedback
+      setError(`Invalid move: ${selectedSquare} to ${square}. Please try a legal move.`)
+      // Keep current selection
     }
   }
 
@@ -368,6 +364,129 @@ const ChessGame = ({ aiProvider, apiKey, gameSettings = {}, selectedModel = '' }
     return defaults[provider] || 'gpt-4o-mini'
   }
 
+  // Helper function to generate comprehensive game analysis
+  const generateGameAnalysis = (fen, legalMoves) => {
+    const chess = new Chess(fen)
+    const fullMoveHistory = chess.history()
+    const isCheck = chess.inCheck()
+    const isCheckmate = chess.isCheckmate()
+    const isDraw = chess.isDraw()
+    
+    // Get material count and position evaluation
+    const board = chess.board()
+    let whiteMaterial = 0, blackMaterial = 0
+    const pieceValues = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 }
+    
+    for (let rank = 0; rank < 8; rank++) {
+      for (let file = 0; file < 8; file++) {
+        const piece = board[rank][file]
+        if (piece) {
+          const value = pieceValues[piece.type]
+          if (piece.color === 'w') whiteMaterial += value
+          else blackMaterial += value
+        }
+      }
+    }
+
+    // Analyze game phase
+    const totalMoves = fullMoveHistory.length
+    let gamePhase = 'opening'
+    if (totalMoves > 20) gamePhase = 'middlegame'
+    if (totalMoves > 40 || (whiteMaterial + blackMaterial) < 20) gamePhase = 'endgame'
+
+    // Format complete move history for analysis
+    const formattedHistory = fullMoveHistory.length > 0 ? 
+      fullMoveHistory.map((move, index) => {
+        const moveNumber = Math.floor(index / 2) + 1
+        const isWhiteMove = index % 2 === 0
+        return isWhiteMove ? `${moveNumber}.${move}` : move
+      }).join(' ') : 'Game just started'
+
+    // Analyze opening if in opening phase
+    let openingAnalysis = ''
+    if (gamePhase === 'opening' && fullMoveHistory.length > 0) {
+      const firstMoves = fullMoveHistory.slice(0, Math.min(10, fullMoveHistory.length)).join(' ')
+      openingAnalysis = `Opening moves: ${firstMoves}`
+    }
+
+    return {
+      fen,
+      fullMoveHistory,
+      formattedHistory,
+      gamePhase,
+      totalMoves,
+      openingAnalysis,
+      whiteMaterial,
+      blackMaterial,
+      isCheck,
+      isCheckmate,
+      isDraw,
+      legalMoves
+    }
+  }
+
+  // Helper function to generate strategic prompt
+  const generateStrategicPrompt = (analysis) => {
+    const { 
+      fen, formattedHistory, gamePhase, totalMoves, openingAnalysis,
+      whiteMaterial, blackMaterial, isCheck, isCheckmate, isDraw, legalMoves
+    } = analysis
+
+    return `You are playing chess as BLACK pieces against a human playing WHITE pieces. Analyze the complete game and make the best move for BLACK.
+
+COMPLETE GAME ANALYSIS:
+- Current position (FEN): ${fen}
+- Game phase: ${gamePhase} (Move ${Math.ceil(totalMoves / 2)})
+- Complete move history: ${formattedHistory}
+${openingAnalysis ? `- ${openingAnalysis}` : ''}
+- Material count: White ${whiteMaterial} - Black ${blackMaterial} (${whiteMaterial > blackMaterial ? 'White +' + (whiteMaterial - blackMaterial) : blackMaterial > whiteMaterial ? 'Black +' + (blackMaterial - whiteMaterial) : 'Equal'})
+- Position status: ${isCheck ? 'BLACK is in CHECK!' : isCheckmate ? 'CHECKMATE' : isDraw ? 'DRAW' : 'Normal position'}
+- Legal moves for BLACK: ${legalMoves.join(', ')}
+
+PHASE-SPECIFIC STRATEGY:
+${gamePhase === 'opening' ? `
+OPENING PRINCIPLES:
+- Control the center with pawns and pieces
+- Develop knights before bishops
+- Castle early for king safety
+- Don't move the same piece twice without purpose
+- Don't bring queen out too early` : ''}
+${gamePhase === 'middlegame' ? `
+MIDDLEGAME STRATEGY:
+- Look for tactical combinations and attacks
+- Improve piece coordination and activity
+- Create weaknesses in opponent's position
+- Consider pawn breaks and space advantage
+- Look for forks, pins, skewers, and discovered attacks` : ''}
+${gamePhase === 'endgame' ? `
+ENDGAME PRINCIPLES:
+- Activate your king as a fighting piece
+- Push passed pawns aggressively
+- Centralize remaining pieces
+- Look for checkmate patterns
+- Use opposition in king and pawn endings` : ''}
+
+STRATEGIC CONSIDERATIONS:
+- Analyze the complete game flow and patterns
+- Consider what your opponent is trying to achieve
+- Look for long-term positional advantages
+- Evaluate pawn structure weaknesses and strengths
+- Consider piece coordination and harmony
+- Look for tactical motifs based on the position
+- If behind in material, seek complications and tactics
+- If ahead in material, simplify and convert advantage
+
+CRITICAL INSTRUCTIONS:
+- Analyze the COMPLETE game history to understand plans and patterns
+- Choose the BEST move considering both tactical and positional factors
+- Consider your opponent's likely responses and plans
+- Respond with ONLY the move notation (e.g., "e5", "Nf6", "O-O", "Qxd5")
+- Do not explain or add any other text
+- The move must be from the legal moves list above
+
+Black's move:`
+  }
+
   const getAIMove = async (fen, provider, apiKey) => {
     const chess = new Chess(fen)
     const legalMoves = chess.moves()
@@ -386,6 +505,9 @@ const ChessGame = ({ aiProvider, apiKey, gameSettings = {}, selectedModel = '' }
     try {
       let aiMove
 
+      // Generate comprehensive game analysis
+      const gameAnalysis = generateGameAnalysis(fen, legalMoves)
+
       // Get difficulty settings
       const difficulty = gameSettings.difficulty || 'intermediate'
       const difficultySettings = {
@@ -401,19 +523,19 @@ const ChessGame = ({ aiProvider, apiKey, gameSettings = {}, selectedModel = '' }
 
       switch (provider) {
         case 'openai':
-          aiMove = await getOpenAIMove(fen, legalMoves, apiKey, settings)
+          aiMove = await getOpenAIMove(gameAnalysis, apiKey, settings)
           break
         case 'claude':
-          aiMove = await getClaudeMove(fen, legalMoves, apiKey, settings)
+          aiMove = await getClaudeMove(gameAnalysis, apiKey, settings)
           break
         case 'google':
-          aiMove = await getGoogleAIMove(fen, legalMoves, apiKey, settings)
+          aiMove = await getGoogleAIMove(gameAnalysis, apiKey, settings)
           break
         case 'cohere':
-          aiMove = await getCohereMove(fen, legalMoves, apiKey, settings)
+          aiMove = await getCohereMove(gameAnalysis, apiKey, settings)
           break
         case 'openrouter':
-          aiMove = await getOpenRouterMove(fen, legalMoves, apiKey, modelToUse, settings)
+          aiMove = await getOpenRouterMove(gameAnalysis, apiKey, modelToUse, settings)
           break
         default:
           throw new Error(`Unknown AI provider: ${provider}`)
@@ -460,26 +582,13 @@ const ChessGame = ({ aiProvider, apiKey, gameSettings = {}, selectedModel = '' }
     }
   }
 
-  const getOpenAIMove = async (fen, legalMoves, apiKey, settings) => {
+  const getOpenAIMove = async (gameAnalysis, apiKey, settings) => {
     const openai = new OpenAI({
       apiKey: apiKey,
       dangerouslyAllowBrowser: true
     })
 
-    const prompt = `You are playing chess as BLACK pieces. The user is playing as WHITE pieces. You must make a move for the BLACK pieces.
-
-Current board position (FEN): ${fen}
-Legal moves available for BLACK: ${legalMoves.join(', ')}
-
-CRITICAL INSTRUCTIONS:
-- You are BLACK, the user is WHITE
-- You must choose a move that BLACK can make
-- The legal moves listed above are the moves BLACK can make
-- Respond with ONLY ONE move from the legal moves list
-- Format: just the move notation like "e5", "Nf6", "O-O", "Qxd5"
-- Do not explain, just give the move
-
-Black's move:`
+    const prompt = generateStrategicPrompt(gameAnalysis)
 
     const model = settings.model === 'expert' ? 'gpt-4o' : 'gpt-4o-mini'
     const response = await openai.chat.completions.create({
@@ -492,26 +601,13 @@ Black's move:`
     return response.choices[0].message.content.trim()
   }
 
-  const getClaudeMove = async (fen, legalMoves, apiKey, settings) => {
+  const getClaudeMove = async (gameAnalysis, apiKey, settings) => {
     const anthropic = new Anthropic({
       apiKey: apiKey,
       dangerouslyAllowBrowser: true
     })
 
-    const prompt = `You are playing chess as BLACK pieces. The user is playing as WHITE pieces. You must make a move for the BLACK pieces.
-
-Current board position (FEN): ${fen}
-Legal moves available for BLACK: ${legalMoves.join(', ')}
-
-CRITICAL INSTRUCTIONS:
-- You are BLACK, the user is WHITE
-- You must choose a move that BLACK can make
-- The legal moves listed above are the moves BLACK can make
-- Respond with ONLY ONE move from the legal moves list
-- Format: just the move notation like "e5", "Nf6", "O-O", "Qxd5"
-- Do not explain, just give the move
-
-Black's move:`
+    const prompt = generateStrategicPrompt(gameAnalysis)
 
     const model = settings.model === 'expert' ? 'claude-3.5-sonnet' : 'claude-3.5-haiku'
     const response = await anthropic.messages.create({
@@ -523,50 +619,24 @@ Black's move:`
     return response.content[0].text.trim()
   }
 
-  const getGoogleAIMove = async (fen, legalMoves, apiKey, settings) => {
+  const getGoogleAIMove = async (gameAnalysis, apiKey, settings) => {
     const genAI = new GoogleGenerativeAI(apiKey)
     const modelName = settings?.model === 'expert' ? 'gemini-1.5-pro' : 'gemini-1.5-flash'
     const model = genAI.getGenerativeModel({ model: modelName })
 
-    const prompt = `You are playing chess as BLACK pieces. The user is playing as WHITE pieces. You must make a move for the BLACK pieces.
-
-Current board position (FEN): ${fen}
-Legal moves available for BLACK: ${legalMoves.join(', ')}
-
-CRITICAL INSTRUCTIONS:
-- You are BLACK, the user is WHITE
-- You must choose a move that BLACK can make
-- The legal moves listed above are the moves BLACK can make
-- Respond with ONLY ONE move from the legal moves list
-- Format: just the move notation like "e5", "Nf6", "O-O", "Qxd5"
-- Do not explain, just give the move
-
-Black's move:`
+    const prompt = generateStrategicPrompt(gameAnalysis)
 
     const result = await model.generateContent(prompt)
     const response = result.response
     return response.text().trim()
   }
 
-  const getCohereMove = async (fen, legalMoves, apiKey, settings) => {
+  const getCohereMove = async (gameAnalysis, apiKey, settings) => {
     const cohere = new CohereClient({
       token: apiKey
     })
 
-    const prompt = `You are playing chess as BLACK pieces. The user is playing as WHITE pieces. You must make a move for the BLACK pieces.
-
-Current board position (FEN): ${fen}
-Legal moves available for BLACK: ${legalMoves.join(', ')}
-
-CRITICAL INSTRUCTIONS:
-- You are BLACK, the user is WHITE
-- You must choose a move that BLACK can make
-- The legal moves listed above are the moves BLACK can make
-- Respond with ONLY ONE move from the legal moves list
-- Format: just the move notation like "e5", "Nf6", "O-O", "Qxd5"
-- Do not explain, just give the move
-
-Black's move:`
+    const prompt = generateStrategicPrompt(gameAnalysis)
 
     const response = await cohere.generate({
       model: "command",
@@ -579,7 +649,9 @@ Black's move:`
     return response.generations[0].text.trim()
   }
 
-  const getOpenRouterMove = async (fen, legalMoves, apiKey, model, settings) => {
+  const getOpenRouterMove = async (gameAnalysis, apiKey, model, settings) => {
+    const prompt = generateStrategicPrompt(gameAnalysis)
+
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -592,20 +664,7 @@ Black's move:`
         model: model,
         messages: [{
           role: 'user',
-          content: `You are playing chess as BLACK pieces. The user is playing as WHITE pieces. You must make a move for the BLACK pieces.
-
-Current board position (FEN): ${fen}
-Legal moves available for BLACK: ${legalMoves.join(', ')}
-
-CRITICAL INSTRUCTIONS:
-- You are BLACK, the user is WHITE
-- You must choose a move that BLACK can make
-- The legal moves listed above are the moves BLACK can make
-- Respond with ONLY ONE move from the legal moves list
-- Format: just the move notation like "e5", "Nf6", "O-O", "Qxd5"
-- Do not explain, just give the move
-
-Black's move:`
+          content: prompt
         }],
         max_tokens: 10,
         temperature: settings.temperature || 0.7
@@ -689,7 +748,7 @@ Black's move:`
   return (
     <div className="chess-game">
       <div className="game-info">
-        <h3>Playing against {aiProvider.toUpperCase()} AI</h3>
+        <h3>Playing against {aiProvider === 'openrouter' ? selectedModel.split('/').pop() : aiProvider.toUpperCase()} AI</h3>
         {gameStatus && <div className="status">{gameStatus}</div>}
         {error && <div className="error">{error}</div>}
         {isThinking && (
@@ -714,7 +773,7 @@ Black's move:`
         <div className="stat">Time: {gameStats.totalTime}</div>
         <div className="stat">Difficulty: {gameSettings.difficulty.charAt(0).toUpperCase() + gameSettings.difficulty.slice(1)}</div>
         <div className="stat">
-          AI: {aiProvider === 'openrouter' ? `OpenRouter (${selectedModel})` : aiProvider.toUpperCase()}
+          AI: {aiProvider === 'openrouter' ? selectedModel.split('/').pop() : aiProvider.toUpperCase()}
         </div>
         <div className="captures-section">
           <div className="capture-group">
